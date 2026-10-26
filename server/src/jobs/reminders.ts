@@ -1,13 +1,12 @@
 import { prisma } from "../lib/db";
-import { formatDate, formatMoney, num, renderTemplate } from "../lib/util";
+import { formatDate, formatMoney, num, renderTemplate, startOfToday } from "../lib/util";
 
 // Queues automatic SMS reminders for debtors whose due date is near or past.
 export async function queueDueReminders() {
   const shops = await prisma.shop.findMany({ where: { smsEnabled: true } });
   let queued = 0;
   for (const shop of shops) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfToday();
     const horizon = new Date(today.getTime() + (shop.remindDaysBefore + 1) * 86400000);
     const quietSince = new Date(Date.now() - shop.remindEveryDays * 86400000 + 3600000);
     const debtors = await prisma.debtor.findMany({

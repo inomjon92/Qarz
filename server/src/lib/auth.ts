@@ -1,9 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { Role } from "@prisma/client";
 import { prisma } from "./db";
 
-const SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+// Without an explicit JWT_SECRET (e.g. one-click Vercel deploy) derive one from the
+// database URL, which is already a secret only the server knows.
+const SECRET =
+  process.env.JWT_SECRET ||
+  (process.env.DATABASE_URL ? crypto.createHash("sha256").update(`jwt:${process.env.DATABASE_URL}`).digest("hex") : "dev-secret-change-me");
 
 export interface AuthedRequest extends Request {
   userId?: string;

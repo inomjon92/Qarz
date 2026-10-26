@@ -49,10 +49,33 @@ export function formatMoney(v: number, currency = "UZS") {
   return currency === "UZS" ? `${s} so'm` : `${s} ${currency}`;
 }
 
+// Uzbekistan is UTC+5 with no DST; all "day" logic uses Tashkent time regardless of server TZ.
+const TZ_OFFSET = 5 * 3600000;
+const DAY = 86400000;
+
+// Shifts a timestamp so its UTC fields read as Tashkent wall-clock time.
+export const tashkent = (d: Date | number = Date.now()) => new Date(new Date(d).getTime() + TZ_OFFSET);
+
+export function startOfToday() {
+  return new Date(Math.floor((Date.now() + TZ_OFFSET) / DAY) * DAY - TZ_OFFSET);
+}
+
+export function startOfMonth() {
+  const t = tashkent();
+  return new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) - TZ_OFFSET);
+}
+
+export const dayKey = (d: Date) => tashkent(d).toISOString().slice(0, 10);
+
 export function formatDate(d: Date | null | undefined) {
   if (!d) return "-";
-  const x = new Date(d);
-  return `${String(x.getDate()).padStart(2, "0")}.${String(x.getMonth() + 1).padStart(2, "0")}.${x.getFullYear()}`;
+  const x = tashkent(d);
+  return `${String(x.getUTCDate()).padStart(2, "0")}.${String(x.getUTCMonth() + 1).padStart(2, "0")}.${x.getUTCFullYear()}`;
+}
+
+export function formatDateTime(d: Date) {
+  const x = tashkent(d);
+  return `${formatDate(d)} ${String(x.getUTCHours()).padStart(2, "0")}:${String(x.getUTCMinutes()).padStart(2, "0")}`;
 }
 
 export function renderTemplate(tpl: string, vars: Record<string, string>) {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/db";
 import type { AuthedRequest } from "../lib/auth";
 import { asyncH } from "../lib/util";
+import { runDailyJobsIfDue } from "../jobs/lazy";
 
 // SMS gateway API used by the Android app: it pulls queued messages and reports results.
 export const smsRouter = Router();
@@ -10,6 +11,7 @@ export const smsRouter = Router();
 smsRouter.get(
   "/pending",
   asyncH(async (req: AuthedRequest, res) => {
+    await runDailyJobsIfDue();
     const owned = await prisma.membership.findMany({ where: { userId: req.userId, role: "OWNER", shop: { smsEnabled: true } }, select: { shopId: true } });
     const shopIds = owned.map((m) => m.shopId);
     // Messages stuck in SENDING (phone died mid-batch) go back into the queue.

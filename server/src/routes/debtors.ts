@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/db";
 import type { AuthedRequest } from "../lib/auth";
-import { asyncH, formatDate, formatMoney, logActivity, normalizePhone, num, recalcDebtor, renderTemplate } from "../lib/util";
+import { asyncH, formatDate, formatDateTime, formatMoney, logActivity, normalizePhone, num, recalcDebtor, renderTemplate, startOfToday } from "../lib/util";
 
 export const debtorsRouter = Router({ mergeParams: true });
 
@@ -16,11 +16,6 @@ const ownerOnly = (req: AuthedRequest, res: any) => {
   return true;
 };
 
-const startOfToday = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
 
 const serialize = (d: any) => ({ ...d, balance: num(d.balance), creditLimit: d.creditLimit == null ? null : num(d.creditLimit) });
 
@@ -96,7 +91,7 @@ debtorsRouter.get(
       { header: "Kim yozdi", key: "by", width: 18 },
     ];
     txs.forEach((t) =>
-      s2.addRow({ date: t.createdAt.toLocaleString("uz-UZ"), debtor: t.debtor.name, type: t.type === "DEBT" ? "Qarz" : "To'lov", amount: num(t.amount), note: t.note, by: t.createdBy?.name })
+      s2.addRow({ date: formatDateTime(t.createdAt), debtor: t.debtor.name, type: t.type === "DEBT" ? "Qarz" : "To'lov", amount: num(t.amount), note: t.note, by: t.createdBy?.name })
     );
     [s1, s2].forEach((s) => (s.getRow(1).font = { bold: true }));
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

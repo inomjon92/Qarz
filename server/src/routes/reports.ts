@@ -1,21 +1,19 @@
 import { Router } from "express";
 import { prisma } from "../lib/db";
 import type { AuthedRequest } from "../lib/auth";
-import { asyncH, num } from "../lib/util";
+import { asyncH, dayKey, num, startOfMonth, startOfToday } from "../lib/util";
 
 export const reportsRouter = Router({ mergeParams: true });
 
-const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
 reportsRouter.get(
   "/dashboard",
   asyncH(async (req: AuthedRequest, res) => {
     const shopId = req.shopId!;
     const days = Math.min(Number(req.query.days) || 30, 365);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfToday();
     const from = new Date(today.getTime() - (days - 1) * 86400000);
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthStart = startOfMonth();
     const soon = new Date(today.getTime() + 3 * 86400000);
     const live = { shopId, deletedAt: null };
 
@@ -30,15 +28,13 @@ reportsRouter.get(
 
     const series: Record<string, { date: string; debt: number; paid: number }> = {};
     for (let i = 0; i < days; i++) {
-      const k = dayKey(new Date(from.getTime() + i * 86400000 + 12 * 3600000));
+      const k = dayKey(new Date(from.getTime() + i * 86400000));
       series[k] = { date: k, debt: 0, paid: 0 };
     }
     const sums = { todayDebt: 0, todayPaid: 0, monthDebt: 0, monthPaid: 0 };
     for (const t of txs) {
       const a = num(t.amount);
-      const local = new Date(t.createdAt);
-      local.setHours(12, 0, 0, 0);
-      const s = series[dayKey(local)];
+      const s = series[dayKey(t.createdAt)];
       if (s) t.type === "DEBT" ? (s.debt += a) : (s.paid += a);
       if (t.createdAt >= monthStart) t.type === "DEBT" ? (sums.monthDebt += a) : (sums.monthPaid += a);
       if (t.createdAt >= today) t.type === "DEBT" ? (sums.todayDebt += a) : (sums.todayPaid += a);
@@ -64,7 +60,7 @@ reportsRouter.get(
     const { from, to, type } = req.query as Record<string, string>;
     const where: any = { shopId: req.shopId, deletedAt: null };
     if (type === "DEBT" || type === "PAYMENT") where.type = type;
-    if (from || to) where.createdAt = { ...(from && { gte: new Date(from) }), ...(to && { lt: new Date(new Date(to).getTime() + 86400000) }) };
+    if (from || to) where.createdAt = { ...(from && { gte: new Date(`${from}T00:00:00+05:00`) }), ...(to && { lt: new Date(new Date(`${to}T00:00:00+05:00`).getTime() + 86400000) }) };
     const items = await prisma.transaction.findMany({
       where,
       include: { debtor: { select: { id: true, name: true } }, createdBy: { select: { name: true } } },

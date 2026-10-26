@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci --prefix server && npm ci --prefix web",
+  "buildCommand": "npm run vercel-build --prefix server && npm run build --prefix web",
+  "outputDirectory": "web/dist",
+  "functions": {
+    "api/index.ts": { "includeFiles": "server/node_modules/.prisma/client/**", "maxDuration": 60 }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [{ "path": "/api/cron/daily", "schedule": "0 4 * * *" }]
+}

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "../lib/db";
 import { requireAuth, signToken, type AuthedRequest } from "../lib/auth";
 import { asyncH, normalizePhone } from "../lib/util";
+import { setWebhook, telegramEnabled } from "../jobs/telegram";
 
 export const authRouter = Router();
 
@@ -90,6 +91,8 @@ authRouter.post(
   asyncH(async (req: AuthedRequest, res) => {
     const code = crypto.randomBytes(4).toString("hex");
     await prisma.user.update({ where: { id: req.userId }, data: { telegramCode: code } });
+    // Serverless hosts have no polling loop; make sure Telegram knows where to deliver updates.
+    if (process.env.VERCEL && telegramEnabled()) await setWebhook(`https://${req.get("host")}`).catch(console.error);
     res.json({ code, bot: process.env.TELEGRAM_BOT_USERNAME || null });
   })
 );
