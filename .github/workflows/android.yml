@@ -26,7 +26,7 @@ jobs:
       - run: npm run build
         env:
           # Repo Settings → Variables → API_URL, e.g. https://qarz.example.uz
-          VITE_API_URL: ${{ vars.API_URL }}
+          VITE_API_URL: ${{ vars.API_URL || 'https://qarz-livid.vercel.app' }}
       - run: npx cap sync android
       - name: Build APK
         working-directory: web/android
