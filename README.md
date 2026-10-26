@@ -15,12 +15,6 @@ Do'kon egalari uchun qarzdorlar daftari: web sayt + Android ilova (SMS eslatmala
 
 Kunlik eslatmalar Vercel Cron (har kuni 9:00) va Android ilova so'rovlari orqali ishga tushadi.
 
-## Bepul o'rnatish (Render + Neon)
-1. https://neon.tech da bepul baza oching, **Connection string** ni nusxalang ("Connection pooling" o'chiq holda).
-2. https://render.com ga GitHub orqali kiring → **New → Blueprint** → shu repo. `DATABASE_URL` ga Neon manzilini qo'ying.
-3. Sayt `https://qarz-daftari.onrender.com` kabi manzilda ochiladi.
-4. (Ixtiyoriy) https://uptimerobot.com da `.../api/health` ni har 5 daqiqada tekshiradigan monitor qo'shing — server uxlab qolmaydi.
-
 ## O'z serveringizga o'rnatish (VPS)
 ```bash
 git clone <repo> && cd qarz-daftari
