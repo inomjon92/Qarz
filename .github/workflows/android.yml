@@ -1,0 +1,64 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm run build
+        env:
+          # Repo Settings → Variables → API_URL, e.g. https://qarz.example.uz
+          VITE_API_URL: ${{ vars.API_URL }}
+      - run: npx cap sync android
+      - name: Build APK
+        working-directory: web/android
+        run: |
+          chmod +x gradlew
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/release.jks
+            ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file=$PWD/app/release.jks \
+              -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
+              -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
+              -Pandroid.injected.signing.key.password="${{ secrets.KEYSTORE_PASSWORD }}"
+            cp app/build/outputs/apk/release/app-release.apk ../../qarz-daftari.apk
+          else
+            ./gradlew assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk ../../qarz-daftari.apk
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qarz-daftari-apk
+          path: qarz-daftari.apk
+      - name: Publish as "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Qarz daftari APK (oxirgi versiya)
+          files: qarz-daftari.apk
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: write

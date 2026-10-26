@@ -1,0 +1,9 @@
+{
+  "name": "Qarz daftari",
+  "short_name": "Qarz daftari",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  SELLER
+}
+
+enum TxType {
+  DEBT
+  PAYMENT
+}
+
+enum SmsStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id             String       @id @default(cuid())
+  name           String
+  phone          String       @unique
+  passwordHash   String
+  telegramChatId String?
+  telegramCode   String?      @unique
+  createdAt      DateTime     @default(now())
+  memberships    Membership[]
+  transactions   Transaction[]
+  activities     Activity[]
+}
+
+model Shop {
+  id                 String        @id @default(cuid())
+  name               String
+  address            String?
+  phone              String?
+  currency           String        @default("UZS")
+  smsEnabled         Boolean       @default(true)
+  smsTemplate        String        @default("Hurmatli {ism}! {dokon} do'konidan {summa} qarzingiz bor. Qaytarish muddati: {muddat}. Iltimos, o'z vaqtida to'lang.")
+  remindDaysBefore   Int           @default(1)
+  remindEveryDays    Int           @default(3)
+  createdAt          DateTime      @default(now())
+  members            Membership[]
+  debtors            Debtor[]
+  transactions       Transaction[]
+  smsMessages        SmsMessage[]
+  activities         Activity[]
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  shopId    String
+  role      Role     @default(SELLER)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, shopId])
+}
+
+model Debtor {
+  id           String        @id @default(cuid())
+  shopId       String
+  name         String
+  phone        String?
+  address      String?
+  note         String?
+  creditLimit  Decimal?      @db.Decimal(16, 2)
+  balance      Decimal       @default(0) @db.Decimal(16, 2)
+  dueDate      DateTime?
+  lastSmsAt    DateTime?
+  publicToken  String        @unique @default(cuid())
+  deletedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  smsMessages  SmsMessage[]
+
+  @@index([shopId, deletedAt])
+}
+
+model Transaction {
+  id          String    @id @default(cuid())
+  shopId      String
+  debtorId    String
+  type        TxType
+  amount      Decimal   @db.Decimal(16, 2)
+  note        String?
+  dueDate     DateTime?
+  createdById String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  debtor      Debtor    @relation(fields: [debtorId], references: [id], onDelete: Cascade)
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([shopId, createdAt])
+  @@index([debtorId])
+}
+
+model SmsMessage {
+  id        String    @id @default(cuid())
+  shopId    String
+  debtorId  String?
+  phone     String
+  text      String
+  auto      Boolean   @default(false)
+  status    SmsStatus @default(PENDING)
+  error     String?
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  debtor    Debtor?   @relation(fields: [debtorId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, status])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  shopId    String
+  userId    String?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, createdAt])
+}

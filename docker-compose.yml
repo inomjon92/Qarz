@@ -1,0 +1,59 @@
+# 24/7: docker compose up -d   (restart: always keeps everything running after reboots)
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: qarz
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-qarz}
+      POSTGRES_DB: qarz
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qarz"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://qarz:${DB_PASSWORD:-qarz}@db:5432/qarz
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET ni .env da kiriting}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+    ports:
+      - "4000:4000"
+
+  # Daily database backup, keeps the last 14 days in ./backups
+  backup:
+    image: postgres:16-alpine
+    restart: always
+    depends_on: [db]
+    environment:
+      PGPASSWORD: ${DB_PASSWORD:-qarz}
+      TZ: Asia/Tashkent
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      sh -c 'while true; do
+        pg_dump -h db -U qarz qarz | gzip > /backups/qarz-$$(date +%F).sql.gz;
+        find /backups -name "*.sql.gz" -mtime +14 -delete;
+        sleep 86400; done'
+
+  # HTTPS with automatic certificate: set DOMAIN in .env and point the domain's DNS at this server.
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    profiles: ["https"]
+    ports: ["80:80", "443:443"]
+    command: caddy reverse-proxy --from ${DOMAIN:-localhost} --to app:4000
+    volumes:
+      - caddy:/data
+
+volumes:
+  pgdata:
+  caddy:

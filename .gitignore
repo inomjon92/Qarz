@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+web/android/app/build/
+web/android/build/
+web/android/.gradle/
+web/android/local.properties
+web/android/app/src/main/assets/public/
+backups/

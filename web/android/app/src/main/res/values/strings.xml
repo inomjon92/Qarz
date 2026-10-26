@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Qarz daftari</string>
+    <string name="title_activity_main">Qarz daftari</string>
+    <string name="package_name">uz.qarzdaftari.app</string>
+    <string name="custom_url_scheme">uz.qarzdaftari.app</string>
+</resources>
