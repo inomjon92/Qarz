@@ -6,6 +6,7 @@ import { useApp } from "../lib/store";
 import { money } from "../lib/format";
 import { NewShopModal } from "../components/NewShopModal";
 import { PageLoader } from "../components/ui";
+import { t } from "../lib/i18n";
 
 interface Summary {
   shops: { id: string; name: string; currency: string; total: number; debtors: number }[];
@@ -25,14 +26,14 @@ export function ShopsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Do'konlarim</h1>
+        <h1 className="text-2xl font-bold">{t("Do'konlarim")}</h1>
         <button className="btn-primary" onClick={() => setCreating(true)}>
-          <Plus size={18} /> Yangi do'kon
+          <Plus size={18} /> {t("Yangi do'kon")}
         </button>
       </div>
       {!multiCurrency && s.shops.length > 1 && (
         <div className="card p-5">
-          <div className="text-sm text-slate-500">Barcha do'konlar bo'yicha jami qarz</div>
+          <div className="text-sm text-slate-500">{t("Barcha do'konlar bo'yicha jami qarz")}</div>
           <div className="text-3xl font-bold">{money(s.total, s.shops[0]?.currency)}</div>
         </div>
       )}
@@ -51,7 +52,7 @@ export function ShopsPage() {
               <span className="font-semibold">{x.name}</span>
             </div>
             <div className="mt-3 text-2xl font-bold">{money(x.total, x.currency)}</div>
-            <div className="text-sm text-slate-500">{x.debtors} ta qarzdor</div>
+            <div className="text-sm text-slate-500">{t("{n} ta qarzdor", { n: x.debtors })}</div>
           </button>
         ))}
       </div>

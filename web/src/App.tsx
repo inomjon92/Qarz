@@ -10,6 +10,7 @@ import { DebtorDetailPage } from "./pages/DebtorDetail";
 import { HistoryPage } from "./pages/History";
 import { SmsPage } from "./pages/Sms";
 import { ShopsPage } from "./pages/Shops";
+import { ProductsPage } from "./pages/Products";
 import { SettingsPage } from "./pages/Settings";
 import { PublicDebtorPage } from "./pages/Public";
 import { PinLock, PinSetup } from "./components/PinScreen";
@@ -43,6 +44,7 @@ function Gate() {
         <Route path="history" element={<HistoryPage />} />
         <Route path="sms" element={<SmsPage />} />
         <Route path="shops" element={<ShopsPage />} />
+        <Route path="products" element={<ProductsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

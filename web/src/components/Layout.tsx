@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { BookOpen, ChevronDown, History, LayoutDashboard, LogOut, MessageSquare, Plus, Settings, Store, Users } from "lucide-react";
+import { BookOpen, ChevronDown, History, LayoutDashboard, LogOut, MessageSquare, Package, Plus, Settings, Store, Users } from "lucide-react";
 import { useApp } from "../lib/store";
 import { NewShopModal } from "./NewShopModal";
+import { t } from "../lib/i18n";
 
 const nav = [
-  { to: "/", label: "Bosh sahifa", short: "Asosiy", icon: LayoutDashboard },
-  { to: "/debtors", label: "Qarzdorlar", short: "Qarzdorlar", icon: Users },
-  { to: "/history", label: "Tarix", short: "Tarix", icon: History },
-  { to: "/sms", label: "SMS xabarlar", short: "SMS", icon: MessageSquare },
-  { to: "/shops", label: "Do'konlar", short: "Do'konlar", icon: Store, desktopOnly: true },
-  { to: "/settings", label: "Sozlamalar", short: "Sozlama", icon: Settings },
+  { to: "/", label: t("Bosh sahifa"), short: t("Asosiy"), icon: LayoutDashboard },
+  { to: "/debtors", label: t("Qarzdorlar"), short: t("Qarzdorlar"), icon: Users },
+  { to: "/history", label: t("Tarix"), short: t("Tarix"), icon: History },
+  { to: "/sms", label: t("SMS xabarlar"), short: "SMS", icon: MessageSquare },
+  { to: "/products", label: t("Mahsulotlar"), short: t("Mahsulot"), icon: Package, desktopOnly: true },
+  { to: "/shops", label: t("Do'konlar"), short: t("Do'konlar"), icon: Store, desktopOnly: true },
+  { to: "/settings", label: t("Sozlamalar"), short: t("Sozlama"), icon: Settings },
 ];
 
 function ShopSwitcher() {
@@ -40,7 +42,7 @@ function ShopSwitcher() {
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800 ${s.id === shop?.id ? "font-semibold text-brand-700 dark:text-brand-500" : ""}`}
               >
                 <span className="truncate">{s.name}</span>
-                <span className="text-xs text-slate-400">{s.role === "OWNER" ? "egasi" : "sotuvchi"}</span>
+                <span className="text-xs text-slate-400">{s.role === "OWNER" ? t("egasi") : t("sotuvchi")}</span>
               </button>
             ))}
             <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
@@ -51,7 +53,7 @@ function ShopSwitcher() {
               }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50 dark:text-brand-500 dark:hover:bg-slate-800"
             >
-              <Plus size={16} /> Yangi do'kon qo'shish
+              <Plus size={16} /> {t("Yangi do'kon qo'shish")}
             </button>
           </div>
         </>
@@ -70,7 +72,7 @@ export function Layout() {
           <div className="rounded-xl bg-brand-600 p-2 text-white">
             <BookOpen size={20} />
           </div>
-          <span className="text-lg font-bold">Qarz daftari</span>
+          <span className="text-lg font-bold">{t("Qarz daftari")}</span>
         </div>
         <nav className="flex-1 space-y-1">
           {nav.map((n) => (
@@ -91,7 +93,7 @@ export function Layout() {
             <div className="truncate text-sm font-semibold">{me?.name}</div>
             <div className="truncate text-xs text-slate-500">{me?.phone}</div>
           </div>
-          <button onClick={logout} className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-rose-600 dark:hover:bg-slate-700" title="Chiqish">
+          <button onClick={logout} className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-rose-600 dark:hover:bg-slate-700" title={t("Chiqish")}>
             <LogOut size={18} />
           </button>
         </div>

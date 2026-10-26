@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 const KEY_TOKEN = "qd_token";
 const KEY_API = "qd_api";
 
@@ -23,20 +25,28 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
   } catch {
-    throw new ApiError("Internet yoki server bilan aloqa yo'q", 0);
+    throw new ApiError(t("Internet yoki server bilan aloqa yo'q"), 0);
   }
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && getToken()) {
     setToken(null);
     location.href = "/login";
   }
-  if (!res.ok) throw new ApiError(data.error || "Xatolik yuz berdi", res.status);
+  if (!res.ok) throw new ApiError(t(data.error || "Xatolik yuz berdi"), res.status);
   return data as T;
 }
 
 export async function download(path: string, filename: string) {
+  // Android WebView cannot save blob downloads, so hand a short-lived link to the phone's browser.
+  if ((window as any).Capacitor?.isNativePlatform?.()) {
+    const full = "/api" + path.split("?")[0];
+    const { token } = await api<{ token: string }>("/auth/download-token", { body: { path: full } });
+    const sep = path.includes("?") ? "&" : "?";
+    location.href = `${getApiBase()}/api${path}${sep}dl=${encodeURIComponent(token)}`;
+    return;
+  }
   const res = await fetch(getApiBase() + "/api" + path, { headers: { Authorization: `Bearer ${getToken()}` } });
-  if (!res.ok) throw new ApiError("Yuklab bo'lmadi", res.status);
+  if (!res.ok) throw new ApiError(t("Yuklab bo'lmadi"), res.status);
   const url = URL.createObjectURL(await res.blob());
   const a = document.createElement("a");
   a.href = url;
@@ -55,6 +65,8 @@ export interface Shop {
   smsTemplate: string;
   remindDaysBefore: number;
   remindEveryDays: number;
+  receiptSms: boolean;
+  receiptTemplate: string;
   role: "OWNER" | "SELLER";
 }
 
@@ -81,12 +93,29 @@ export interface Debtor {
   updatedAt: string;
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  unit: string;
+}
+
+export interface TxItem {
+  productId?: string | null;
+  name: string;
+  qty: number;
+  price: number;
+  unit?: string | null;
+  total?: number;
+}
+
 export interface Tx {
   id: string;
   type: "DEBT" | "PAYMENT";
   amount: number;
   note: string | null;
   dueDate: string | null;
+  items?: TxItem[] | null;
   createdAt: string;
   createdBy?: { name: string } | null;
   debtor?: { id: string; name: string };

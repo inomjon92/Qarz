@@ -4,6 +4,7 @@ import { BookOpen } from "lucide-react";
 import { api } from "../lib/api";
 import { date, dateTime, money } from "../lib/format";
 import { PageLoader } from "../components/ui";
+import { t } from "../lib/i18n";
 
 // Customer-facing read-only page: /p/:token
 export function PublicDebtorPage() {
@@ -23,24 +24,24 @@ export function PublicDebtorPage() {
       </div>
       <div className="card p-5">
         <div className="text-sm text-slate-500">Hurmatli {d.name}, sizning qarzingiz:</div>
-        <div className={`mt-1 text-3xl font-bold ${d.balance > 0 ? "text-rose-600" : "text-brand-600"}`}>{d.balance > 0 ? money(d.balance, cur) : "Qarzingiz yo'q ✅"}</div>
+        <div className={`mt-1 text-3xl font-bold ${d.balance > 0 ? "text-rose-600" : "text-brand-600"}`}>{d.balance > 0 ? money(d.balance, cur) : t("Qarzingiz yo'q ✅")}</div>
         {d.dueDate && d.balance > 0 && <div className="mt-1 text-sm text-slate-500">Qaytarish muddati: {date(d.dueDate)}</div>}
         {d.shop.phone && (
           <a href={`tel:${d.shop.phone}`} className="btn-ghost mt-4">
-            Do'konga qo'ng'iroq: {d.shop.phone}
+            {t("Do'konga qo'ng'iroq: {p}", { p: d.shop.phone })}
           </a>
         )}
       </div>
       <div className="card divide-y divide-slate-100 dark:divide-slate-800">
-        {d.transactions.map((t: any) => (
-          <div key={t.id} className="flex justify-between px-4 py-3 text-sm">
+        {d.transactions.map((tx: any) => (
+          <div key={tx.id} className="flex justify-between px-4 py-3 text-sm">
             <div>
-              <div className="font-medium">{t.type === "DEBT" ? "Qarz" : "To'lov"}{t.note && <span className="font-normal text-slate-500"> · {t.note}</span>}</div>
-              <div className="text-xs text-slate-500">{dateTime(t.createdAt)}</div>
+              <div className="font-medium">{tx.type === "DEBT" ? t("Qarz") : t("To'lov")}{tx.note && <span className="font-normal text-slate-500"> · {tx.note}</span>}</div>
+              <div className="text-xs text-slate-500">{dateTime(tx.createdAt)}</div>
             </div>
-            <div className={`font-semibold ${t.type === "DEBT" ? "text-rose-600" : "text-brand-600"}`}>
-              {t.type === "DEBT" ? "+" : "−"}
-              {money(t.amount, cur)}
+            <div className={`font-semibold ${tx.type === "DEBT" ? "text-rose-600" : "text-brand-600"}`}>
+              {tx.type === "DEBT" ? "+" : "−"}
+              {money(tx.amount, cur)}
             </div>
           </div>
         ))}

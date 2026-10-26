@@ -16,6 +16,8 @@ const shopSchema = z.object({
   smsTemplate: z.string().min(5).optional(),
   remindDaysBefore: z.number().int().min(0).max(30).optional(),
   remindEveryDays: z.number().int().min(1).max(30).optional(),
+  receiptSms: z.boolean().optional(),
+  receiptTemplate: z.string().min(5).optional(),
 });
 
 shopsRouter.post(

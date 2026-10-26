@@ -3,6 +3,7 @@ import { api, type Debtor } from "../lib/api";
 import { addDays, groupDigits, parseAmount, toInputDate } from "../lib/format";
 import { toast, useApp } from "../lib/store";
 import { AmountInput, Field, Modal } from "./ui";
+import { t } from "../lib/i18n";
 
 export function DebtorForm({ open, onClose, debtor, onSaved }: { open: boolean; onClose: () => void; debtor?: Debtor | null; onSaved: (d: Debtor) => void }) {
   const { shop } = useApp();
@@ -47,7 +48,7 @@ export function DebtorForm({ open, onClose, debtor, onSaved }: { open: boolean; 
       const saved = debtor
         ? await api(`/shops/${shop!.id}/debtors/${debtor.id}`, { method: "PUT", body })
         : await api(`/shops/${shop!.id}/debtors`, { body });
-      toast(debtor ? "Saqlandi" : "Qarzdor qo'shildi");
+      toast(debtor ? t("Saqlandi") : t("Qarzdor qo'shildi"));
       onSaved(saved);
       onClose();
     } catch (err: any) {
@@ -58,45 +59,45 @@ export function DebtorForm({ open, onClose, debtor, onSaved }: { open: boolean; 
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={debtor ? "Qarzdorni tahrirlash" : "Yangi qarzdor"}>
+    <Modal open={open} onClose={onClose} title={debtor ? t("Qarzdorni tahrirlash") : t("Yangi qarzdor")}>
       <form onSubmit={submit} className="space-y-3">
-        <Field label="Ism familiya">
+        <Field label={t("Ism familiya")}>
           <input className="input" value={f.name} onChange={set("name")} required autoFocus />
         </Field>
-        <Field label="Telefon raqam" hint="SMS eslatma shu raqamga yuboriladi">
+        <Field label={t("Telefon raqam")} hint={t("SMS eslatma shu raqamga yuboriladi")}>
           <input className="input" inputMode="tel" placeholder="+998 90 123 45 67" value={f.phone} onChange={set("phone")} />
         </Field>
         {!debtor && (
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Qarz summasi">
+            <Field label={t("Qarz summasi")}>
               <AmountInput value={f.amount} onChange={(v) => setF({ ...f, amount: v })} />
             </Field>
-            <Field label="Qaytarish muddati">
+            <Field label={t("Qaytarish muddati")}>
               <input className="input" type="date" value={f.dueDate} onChange={set("dueDate")} />
             </Field>
           </div>
         )}
         {!debtor && f.amount && (
-          <Field label="Nima uchun (mahsulot)">
-            <input className="input" value={f.txNote} onChange={set("txNote")} placeholder="Masalan: un 2 qop, yog'" />
+          <Field label={t("Nima uchun (mahsulot)")}>
+            <input className="input" value={f.txNote} onChange={set("txNote")} placeholder={t("Masalan: un 2 qop, yog'")} />
           </Field>
         )}
         {debtor && (
-          <Field label="Qaytarish muddati">
+          <Field label={t("Qaytarish muddati")}>
             <input className="input" type="date" value={f.dueDate} onChange={set("dueDate")} />
           </Field>
         )}
-        <Field label="Manzil">
+        <Field label={t("Manzil")}>
           <input className="input" value={f.address} onChange={set("address")} />
         </Field>
-        <Field label={`Qarz limiti (${shop?.currency === "USD" ? "$" : "so'm"})`} hint="Limitdan oshsa ogohlantiramiz">
+        <Field label={t("Qarz limiti ({c})", { c: shop?.currency === "USD" ? "$" : t("so'm") })} hint={t("Limitdan oshsa ogohlantiramiz")}>
           <AmountInput value={f.creditLimit} onChange={(v) => setF({ ...f, creditLimit: v })} />
         </Field>
-        <Field label="Izoh">
+        <Field label={t("Izoh")}>
           <textarea className="input" rows={2} value={f.note} onChange={set("note")} />
         </Field>
         <button className="btn-primary w-full py-3" disabled={busy}>
-          Saqlash
+          {t("Saqlash")}
         </button>
       </form>
     </Modal>

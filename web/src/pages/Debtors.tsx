@@ -6,13 +6,14 @@ import { toast, useApp } from "../lib/store";
 import { daysLeft, money, phone } from "../lib/format";
 import { DebtorForm } from "../components/DebtorForm";
 import { Avatar, DueBadge, Empty, PageLoader } from "../components/ui";
+import { t } from "../lib/i18n";
 
 const filters = [
-  { k: "debt", label: "Qarzdorlar" },
-  { k: "overdue", label: "Muddati o'tgan" },
-  { k: "soon", label: "Muddati yaqin" },
-  { k: "paid", label: "To'laganlar" },
-  { k: "all", label: "Hammasi" },
+  { k: "debt", label: t("Qarzdorlar") },
+  { k: "overdue", label: t("Muddati o'tgan") },
+  { k: "soon", label: t("Muddati yaqin") },
+  { k: "paid", label: t("To'laganlar") },
+  { k: "all", label: t("Hammasi") },
 ];
 
 export function DebtorsPage() {
@@ -39,10 +40,10 @@ export function DebtorsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Qarzdorlar</h1>
+          <h1 className="text-2xl font-bold">{t("Qarzdorlar")}</h1>
           {data && (
             <p className="text-sm text-slate-500">
-              {data.withDebt} kishi · jami <b className="text-slate-900 dark:text-slate-100">{money(data.total, shop.currency)}</b>
+              {t("{n} kishi · jami", { n: data.withDebt })} <b className="text-slate-900 dark:text-slate-100">{money(data.total, shop.currency)}</b>
             </p>
           )}
         </div>
@@ -51,18 +52,18 @@ export function DebtorsPage() {
             <Download size={18} /> <span className="hidden sm:inline">Excel</span>
           </button>
           <button className="btn-primary" onClick={() => setParams({ new: "1" })}>
-            <Plus size={18} /> Qo'shish
+            <Plus size={18} /> {t("Qo'shish")}
           </button>
         </div>
       </div>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <input className="input pl-10" placeholder="Ism, telefon yoki manzil bo'yicha qidirish" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="input pl-10" placeholder={t("Ism, telefon yoki manzil bo'yicha qidirish")} value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
 
       <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
-        {[...filters, ...(isOwner ? [{ k: "deleted", label: "O'chirilganlar" }] : [])].map((f) => (
+        {[...filters, ...(isOwner ? [{ k: "deleted", label: t("O'chirilganlar") }] : [])].map((f) => (
           <button
             key={f.k}
             onClick={() => setFilter(f.k)}
@@ -72,10 +73,10 @@ export function DebtorsPage() {
           </button>
         ))}
         <select className="input ml-auto w-auto min-w-[150px] py-1.5" value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="recent">Oxirgi o'zgarish</option>
-          <option value="balance">Qarz miqdori</option>
-          <option value="due">Muddat</option>
-          <option value="name">Ism (A-Z)</option>
+          <option value="recent">{t("Oxirgi o'zgarish")}</option>
+          <option value="balance">{t("Qarz miqdori")}</option>
+          <option value="due">{t("Muddat")}</option>
+          <option value="name">{t("Ism (A-Z)")}</option>
         </select>
       </div>
 
@@ -85,8 +86,8 @@ export function DebtorsPage() {
         <div className="card">
           <Empty
             icon={<Users size={28} />}
-            title={q ? "Hech narsa topilmadi" : "Bu ro'yxat bo'sh"}
-            text={q ? "Boshqa so'z bilan qidirib ko'ring" : "Yangi qarzdor qo'shish uchun “Qo'shish” tugmasini bosing"}
+            title={q ? t("Hech narsa topilmadi") : t("Bu ro'yxat bo'sh")}
+            text={q ? t("Boshqa so'z bilan qidirib ko'ring") : t("Yangi qarzdor qo'shish uchun “Qo'shish” tugmasini bosing")}
           />
         </div>
       ) : (
@@ -102,7 +103,7 @@ export function DebtorsPage() {
                 </div>
               </div>
               <div className={`text-right font-semibold ${d.balance > 0 ? "text-rose-600 dark:text-rose-400" : "text-brand-600"}`}>
-                {d.balance > 0 ? money(d.balance, shop.currency) : d.balance < 0 ? `+${money(-d.balance, shop.currency)}` : "To'langan"}
+                {d.balance > 0 ? money(d.balance, shop.currency) : d.balance < 0 ? `+${money(-d.balance, shop.currency)}` : t("To'langan")}
               </div>
             </Link>
           ))}

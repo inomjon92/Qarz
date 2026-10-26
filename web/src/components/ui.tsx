@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
 import { groupDigits } from "../lib/format";
+import { t } from "../lib/i18n";
 
 export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   useEffect(() => {
@@ -15,7 +16,7 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
       <div className="card max-h-[92vh] w-full overflow-y-auto rounded-b-none p-5 sm:max-w-md sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Yopish">
+          <button onClick={onClose} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label={t("Yopish")}>
             <X size={20} />
           </button>
         </div>
@@ -94,12 +95,12 @@ export function DueBadge({ days }: { days: number | null }) {
   if (days == null) return null;
   const [cls, text] =
     days < 0
-      ? ["bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300", `${-days} kun o'tdi`]
+      ? ["bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300", t("{n} kun o'tdi", { n: -days })]
       : days === 0
-        ? ["bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", "Bugun"]
+        ? ["bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", t("Bugun")]
         : days <= 3
-          ? ["bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300", `${days} kun qoldi`]
-          : ["bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300", `${days} kun qoldi`];
+          ? ["bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300", t("{n} kun qoldi", { n: days })]
+          : ["bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300", t("{n} kun qoldi", { n: days })];
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{text}</span>;
 }
 

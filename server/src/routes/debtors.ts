@@ -186,15 +186,44 @@ debtorsRouter.post(
   asyncH(async (req: AuthedRequest, res) => {
     const d = await findDebtor(req);
     if (!d || d.deletedAt) return res.status(404).json({ error: "Qarzdor topilmadi" });
-    const body = z
-      .object({ type: z.enum(["DEBT", "PAYMENT"]), amount: z.number().positive("Summa 0 dan katta bo'lsin"), note: z.string().nullish(), dueDate: z.coerce.date().nullish() })
+    const item = z.object({ productId: z.string().nullish(), name: z.string().min(1), qty: z.number().positive("Soni noto'g'ri"), price: z.number().nonnegative(), unit: z.string().nullish() });
+    const { items, sendReceipt, ...body } = z
+      .object({
+        type: z.enum(["DEBT", "PAYMENT"]),
+        amount: z.number().positive("Summa 0 dan katta bo'lsin").optional(),
+        note: z.string().nullish(),
+        dueDate: z.coerce.date().nullish(),
+        items: z.array(item).max(100).optional(),
+        sendReceipt: z.boolean().optional(),
+      })
       .parse(req.body);
-    await prisma.transaction.create({ data: { ...body, shopId: req.shopId!, debtorId: d.id, createdById: req.userId } });
+    // With line items the total is computed here so the client cannot send a mismatched sum.
+    const lines = items?.length ? items.map((i) => ({ ...i, total: Math.round(i.qty * i.price * 100) / 100 })) : undefined;
+    const amount = lines ? lines.reduce((s, i) => s + i.total, 0) : body.amount;
+    if (!amount || amount <= 0) return res.status(400).json({ error: "Summa 0 dan katta bo'lsin" });
+    const note = body.note || (lines ? lines.map((i) => `${i.name} ×${i.qty}`).join(", ") : null);
+    await prisma.transaction.create({
+      data: { type: body.type, amount, note, dueDate: body.dueDate, items: lines, shopId: req.shopId!, debtorId: d.id, createdById: req.userId },
+    });
     if (body.type === "DEBT" && body.dueDate) await prisma.debtor.update({ where: { id: d.id }, data: { dueDate: body.dueDate } });
     const upd = await recalcDebtor(d.id);
-    await logActivity(req.shopId!, req.userId, body.type === "DEBT" ? "Qarz yozildi" : "To'lov qabul qilindi", `${d.name}: ${body.amount}`);
+    await logActivity(req.shopId!, req.userId, body.type === "DEBT" ? "Qarz yozildi" : "To'lov qabul qilindi", `${d.name}: ${amount}`);
+    const shop = await prisma.shop.findUniqueOrThrow({ where: { id: d.shopId } });
+    let receiptQueued = false;
+    if ((sendReceipt ?? shop.receiptSms) && d.phone) {
+      const text = renderTemplate(shop.receiptTemplate, {
+        ism: d.name,
+        dokon: shop.name,
+        amal: body.type === "DEBT" ? "qarz yozildi" : "to'lov qabul qilindi",
+        summa: formatMoney(amount, shop.currency),
+        qarz: formatMoney(Math.max(0, num(upd.balance)), shop.currency),
+        muddat: formatDate(upd.dueDate),
+      });
+      await prisma.smsMessage.create({ data: { shopId: d.shopId, debtorId: d.id, phone: d.phone, text } });
+      receiptQueued = true;
+    }
     const overLimit = d.creditLimit != null && num(upd.balance) > num(d.creditLimit);
-    res.json({ debtor: serialize(upd), overLimit });
+    res.json({ debtor: serialize(upd), overLimit, receiptQueued });
   })
 );
 

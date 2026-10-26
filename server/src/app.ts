@@ -12,6 +12,7 @@ import { debtorsRouter } from "./routes/debtors";
 import { reportsRouter } from "./routes/reports";
 import { smsRouter } from "./routes/sms";
 import { publicRouter } from "./routes/public";
+import { productsRouter } from "./routes/products";
 import { nudgeDailyJobs, runDailyJobsIfDue } from "./jobs/lazy";
 import { queueDueReminders } from "./jobs/reminders";
 import { handleUpdate, sendDailyReports, setWebhook, telegramEnabled, webhookSecret } from "./jobs/telegram";
@@ -53,6 +54,7 @@ export function createApp({ serveWeb = true, nudge = false } = {}) {
   app.use("/api/shops", requireAuth, shopsRouter);
   app.use("/api/shops/:shopId/debtors", requireAuth, requireShop(), debtorsRouter);
   app.use("/api/shops/:shopId/reports", requireAuth, requireShop(), reportsRouter);
+  app.use("/api/shops/:shopId/products", requireAuth, requireShop(), productsRouter);
   app.use("/api/sms", requireAuth, smsRouter);
   app.use("/api", (_req, res) => res.status(404).json({ error: "Topilmadi" }));
   app.use(errorHandler);

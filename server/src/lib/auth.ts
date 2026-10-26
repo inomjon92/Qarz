@@ -20,12 +20,26 @@ export function signToken(userId: string) {
   return jwt.sign({ sub: userId }, SECRET, { expiresIn: "90d" });
 }
 
+// Short-lived token that only works for one GET path, so the Android app can open
+// a file download in the phone's browser without exposing the login token.
+export function signDownloadToken(userId: string, path: string) {
+  return jwt.sign({ sub: userId, dl: path }, SECRET, { expiresIn: "5m" });
+}
+
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-  if (!token) return res.status(401).json({ error: "Tizimga kiring" });
+  const dl = typeof req.query.dl === "string" ? req.query.dl : null;
+  if (!token && !dl) return res.status(401).json({ error: "Tizimga kiring" });
   try {
-    const payload = jwt.verify(token, SECRET) as { sub: string };
+    if (!token) {
+      const p = jwt.verify(dl!, SECRET) as { sub: string; dl?: string };
+      if (req.method !== "GET" || p.dl !== req.originalUrl.split("?")[0]) throw new Error("bad download token");
+      req.userId = p.sub;
+      return next();
+    }
+    const payload = jwt.verify(token, SECRET) as { sub: string; dl?: string };
+    if (payload.dl) throw new Error("download token used as login");
     req.userId = payload.sub;
     next();
   } catch {

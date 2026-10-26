@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/db";
 import type { AuthedRequest } from "../lib/auth";
 import { asyncH, dayKey, num, startOfMonth, startOfToday } from "../lib/util";
+import { monthlyPdf } from "../lib/pdf";
 
 export const reportsRouter = Router({ mergeParams: true });
 
@@ -73,6 +74,15 @@ reportsRouter.get(
       debt: out.filter((t) => t.type === "DEBT").reduce((s, t) => s + t.amount, 0),
       paid: out.filter((t) => t.type === "PAYMENT").reduce((s, t) => s + t.amount, 0),
     });
+  })
+);
+
+reportsRouter.get(
+  "/monthly.pdf",
+  asyncH(async (req: AuthedRequest, res) => {
+    const month = String(req.query.month || "");
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return res.status(400).json({ error: "Oy noto'g'ri" });
+    await monthlyPdf(req.shopId!, month, res);
   })
 );
 

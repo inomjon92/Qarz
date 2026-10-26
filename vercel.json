@@ -9,7 +9,7 @@
   "outputDirectory": "web/dist",
   "functions": {
     "api/index.ts": {
-      "includeFiles": "server/node_modules/.prisma/client/**",
+      "includeFiles": "{server/node_modules/.prisma/client/**,server/assets/**,server/node_modules/pdfkit/js/data/**}",
       "maxDuration": 60
     }
   },

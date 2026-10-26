@@ -5,6 +5,7 @@ import { api, getApiBase, setApiBase } from "../lib/api";
 import { toast, useApp } from "../lib/store";
 import { isNative } from "../lib/native";
 import { Field, Spinner } from "../components/ui";
+import { t } from "../lib/i18n";
 
 function Shell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   const [srv, setSrv] = useState(getApiBase());
@@ -23,7 +24,7 @@ function Shell({ title, subtitle, children }: { title: string; subtitle: string;
         {isNative() && (
           <div className="mt-4 text-center">
             <button onClick={() => setShowSrv(!showSrv)} className="inline-flex items-center gap-1 text-xs text-slate-500">
-              <Server size={14} /> Server manzili
+              <Server size={14} /> {t("Server manzili")}
             </button>
             {showSrv && (
               <div className="mt-2 flex gap-2">
@@ -32,7 +33,7 @@ function Shell({ title, subtitle, children }: { title: string; subtitle: string;
                   className="btn-ghost"
                   onClick={() => {
                     setApiBase(srv.trim());
-                    toast("Saqlandi");
+                    toast(t("Saqlandi"));
                   }}
                 >
                   OK
@@ -66,21 +67,21 @@ export function LoginPage() {
     }
   };
   return (
-    <Shell title="Qarz daftari" subtitle="Do'koningiz qarzlarini oson boshqaring">
+    <Shell title={t("Qarz daftari")} subtitle={t("Do'koningiz qarzlarini oson boshqaring")}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Telefon raqam">
+        <Field label={t("Telefon raqam")}>
           <input className="input" inputMode="tel" placeholder="+998 90 123 45 67" value={phone} onChange={(e) => setPhone(e.target.value)} required autoFocus />
         </Field>
-        <Field label="Parol">
+        <Field label={t("Parol")}>
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
         <button className="btn-primary w-full py-3" disabled={busy}>
-          {busy ? <Spinner /> : "Kirish"}
+          {busy ? <Spinner /> : t("Kirish")}
         </button>
         <p className="text-center text-sm text-slate-500">
           Hisobingiz yo'qmi?{" "}
           <Link to="/register" className="font-semibold text-brand-600">
-            Ro'yxatdan o'tish
+            {t("Ro'yxatdan o'tish")}
           </Link>
         </p>
       </form>
@@ -108,27 +109,27 @@ export function RegisterPage() {
     }
   };
   return (
-    <Shell title="Ro'yxatdan o'tish" subtitle="Bir daqiqada do'koningizni qo'shing">
+    <Shell title={t("Ro'yxatdan o'tish")} subtitle={t("Bir daqiqada do'koningizni qo'shing")}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Ismingiz">
+        <Field label={t("Ismingiz")}>
           <input className="input" value={f.name} onChange={set("name")} required autoFocus />
         </Field>
-        <Field label="Telefon raqam">
+        <Field label={t("Telefon raqam")}>
           <input className="input" inputMode="tel" placeholder="+998 90 123 45 67" value={f.phone} onChange={set("phone")} required />
         </Field>
-        <Field label="Parol" hint="Kamida 6 ta belgi">
+        <Field label={t("Parol")} hint={t("Kamida 6 ta belgi")}>
           <input className="input" type="password" value={f.password} onChange={set("password")} required minLength={6} />
         </Field>
-        <Field label="Do'kon nomi">
-          <input className="input" placeholder="Masalan: Baraka market" value={f.shopName} onChange={set("shopName")} required />
+        <Field label={t("Do'kon nomi")}>
+          <input className="input" placeholder={t("Masalan: Baraka market")} value={f.shopName} onChange={set("shopName")} required />
         </Field>
         <button className="btn-primary w-full py-3" disabled={busy}>
-          {busy ? <Spinner /> : "Ro'yxatdan o'tish"}
+          {busy ? <Spinner /> : t("Ro'yxatdan o'tish")}
         </button>
         <p className="text-center text-sm text-slate-500">
           Hisobingiz bormi?{" "}
           <Link to="/login" className="font-semibold text-brand-600">
-            Kirish
+            {t("Kirish")}
           </Link>
         </p>
       </form>

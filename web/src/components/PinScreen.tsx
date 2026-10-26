@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BookOpen, Delete } from "lucide-react";
 import { checkPin, savePin } from "../lib/pin";
 import { useApp } from "../lib/store";
+import { t } from "../lib/i18n";
 
 const MAX_TRIES = 5;
 
@@ -31,7 +32,7 @@ function Pad({ title, subtitle, error, value, onDigit, onBack, footer }: { title
             <span key={i} />
           )
         )}
-        <button onClick={onBack} className="flex h-16 items-center justify-center rounded-full transition active:bg-white/20" aria-label="O'chirish">
+        <button onClick={onBack} className="flex h-16 items-center justify-center rounded-full transition active:bg-white/20" aria-label={t("O'chirish")}>
           <Delete size={26} />
         </button>
       </div>
@@ -54,15 +55,15 @@ export function PinSetup({ onDone }: { onDone: () => void }) {
     } else if (first === value) {
       savePin(value).then(onDone);
     } else {
-      setError("PIN kodlar mos kelmadi, qaytadan");
+      setError(t("PIN kodlar mos kelmadi, qaytadan"));
       setFirst("");
       setValue("");
     }
   }, [value, first, onDone]);
   return (
     <Pad
-      title={first ? "PIN kodni takrorlang" : "4 xonali PIN kod o'rnating"}
-      subtitle="Keyingi safar ilovaga shu kod bilan kirasiz"
+      title={first ? t("PIN kodni takrorlang") : t("4 xonali PIN kod o'rnating")}
+      subtitle={t("Keyingi safar ilovaga shu kod bilan kirasiz")}
       error={error}
       value={value}
       onDigit={(d) => setValue((v) => (v + d).slice(0, 4))}
@@ -83,21 +84,21 @@ export function PinLock({ onUnlock }: { onUnlock: () => void }) {
       const n = tries + 1;
       if (n >= MAX_TRIES) return logout();
       setTries(n);
-      setError(`Noto'g'ri PIN. ${MAX_TRIES - n} ta urinish qoldi`);
+      setError(t("Noto'g'ri PIN. {n} ta urinish qoldi", { n: MAX_TRIES - n }));
       setValue("");
     });
   }, [value, tries, onUnlock, logout]);
   return (
     <Pad
-      title={`Salom, ${me?.name || ""}`}
-      subtitle="PIN kodni kiriting"
+      title={t("Salom, {name}", { name: me?.name || "" })}
+      subtitle={t("PIN kodni kiriting")}
       error={error}
       value={value}
       onDigit={(d) => setValue((v) => (v + d).slice(0, 4))}
       onBack={() => setValue((v) => v.slice(0, -1))}
       footer={
-        <button className="text-white/80 underline" onClick={() => confirm("Login va parol bilan qaytadan kirasiz. Davom etamizmi?") && logout()}>
-          PIN kodni unutdim
+        <button className="text-white/80 underline" onClick={() => confirm(t("Login va parol bilan qaytadan kirasiz. Davom etamizmi?")) && logout()}>
+          {t("PIN kodni unutdim")}
         </button>
       }
     />

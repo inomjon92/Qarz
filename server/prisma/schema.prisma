@@ -48,12 +48,28 @@ model Shop {
   smsTemplate        String        @default("Hurmatli {ism}! {dokon} do'konidan {summa} qarzingiz bor. Qaytarish muddati: {muddat}. Iltimos, o'z vaqtida to'lang.")
   remindDaysBefore   Int           @default(1)
   remindEveryDays    Int           @default(3)
+  receiptSms         Boolean       @default(false)
+  receiptTemplate    String        @default("{dokon}: {amal} {summa}. Jami qarzingiz: {qarz}. Rahmat!")
   createdAt          DateTime      @default(now())
   members            Membership[]
   debtors            Debtor[]
   transactions       Transaction[]
   smsMessages        SmsMessage[]
   activities         Activity[]
+  products           Product[]
+}
+
+model Product {
+  id        String    @id @default(cuid())
+  shopId    String
+  name      String
+  price     Decimal   @db.Decimal(16, 2)
+  unit      String    @default("dona")
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, deletedAt])
 }
 
 model Membership {
@@ -98,6 +114,7 @@ model Transaction {
   amount      Decimal   @db.Decimal(16, 2)
   note        String?
   dueDate     DateTime?
+  items       Json?
   createdById String?
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())

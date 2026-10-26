@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { z } from "zod";
 import { prisma } from "../lib/db";
-import { requireAuth, signToken, type AuthedRequest } from "../lib/auth";
+import { requireAuth, signDownloadToken, signToken, type AuthedRequest } from "../lib/auth";
 import { asyncH, normalizePhone } from "../lib/util";
 import { setWebhook, telegramEnabled } from "../jobs/telegram";
 
@@ -81,6 +81,15 @@ authRouter.put(
     }
     await prisma.user.update({ where: { id: user.id }, data });
     res.json({ ok: true });
+  })
+);
+
+authRouter.post(
+  "/download-token",
+  requireAuth,
+  asyncH(async (req: AuthedRequest, res) => {
+    const { path } = z.object({ path: z.string().startsWith("/api/") }).parse(req.body);
+    res.json({ token: signDownloadToken(req.userId!, path) });
   })
 );
 

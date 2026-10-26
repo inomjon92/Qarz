@@ -1,6 +1,8 @@
+import { t } from "./i18n";
+
 export function money(v: number, currency = "UZS") {
   const s = Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  return currency === "UZS" ? `${s} so'm` : currency === "USD" ? `$${s}` : `${s} ${currency}`;
+  return currency === "UZS" ? `${s} ${t("so'm")}` : currency === "USD" ? `$${s}` : `${s} ${currency}`;
 }
 
 export function date(d?: string | Date | null) {
