@@ -7,6 +7,8 @@ import { applyTheme, getTheme, type Theme } from "../lib/theme";
 import { dateTime, phone } from "../lib/format";
 import { Field, Modal } from "../components/ui";
 import { GatewayCard } from "../components/GatewayCard";
+import { PinSetup } from "../components/PinScreen";
+import { isNative } from "../lib/native";
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -199,6 +201,7 @@ function Profile() {
   const { me, logout } = useApp();
   const [f, setF] = useState({ oldPassword: "", newPassword: "" });
   const [theme, setTheme] = useState<Theme>(getTheme());
+  const [changingPin, setChangingPin] = useState(false);
   return (
     <Section title="Profil" icon={<Moon size={18} />}>
       <div className="text-sm">
@@ -233,6 +236,12 @@ function Profile() {
           </button>
         ))}
       </div>
+      {isNative() && (
+        <button className="btn-ghost mt-4 mr-2" onClick={() => setChangingPin(true)}>
+          PIN kodni o'zgartirish
+        </button>
+      )}
+      {changingPin && <PinSetup onDone={() => (setChangingPin(false), toast("PIN kod o'zgartirildi"))} />}
       <button className="btn-ghost mt-4 text-rose-600" onClick={logout}>
         <LogOut size={16} /> Chiqish
       </button>

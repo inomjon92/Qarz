@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { api, getToken, setToken, type Me, type Shop } from "./api";
+import { clearPin } from "./pin";
 
 interface Ctx {
   me: Me | null;
@@ -50,11 +51,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         refresh,
         isOwner: shop?.role === "OWNER",
         login: async (token) => {
+          clearPin();
           setToken(token);
           setLoading(true);
           await refresh();
         },
         logout: () => {
+          clearPin();
           setToken(null);
           setMe(null);
         },
