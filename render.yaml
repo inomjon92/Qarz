@@ -1,0 +1,20 @@
+# Render Blueprint: free web service. Database: free Neon Postgres (paste its URL as DATABASE_URL).
+services:
+  - type: web
+    name: qarz-daftari
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TZ
+        value: Asia/Tashkent
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false

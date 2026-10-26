@@ -81,6 +81,13 @@ export async function buildReport(userId: string) {
 
 export async function sendDailyReports() {
   if (!TOKEN) return;
-  const users = await prisma.user.findMany({ where: { telegramChatId: { not: null } } });
-  for (const u of users) await sendTelegram(u.telegramChatId!, await buildReport(u.id));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const users = await prisma.user.findMany({
+    where: { telegramChatId: { not: null }, OR: [{ lastReportAt: null }, { lastReportAt: { lt: today } }] },
+  });
+  for (const u of users) {
+    await prisma.user.update({ where: { id: u.id }, data: { lastReportAt: new Date() } });
+    await sendTelegram(u.telegramChatId!, await buildReport(u.id));
+  }
 }

@@ -15,12 +15,14 @@ import { smsRouter } from "./routes/sms";
 import { publicRouter } from "./routes/public";
 import { queueDueReminders } from "./jobs/reminders";
 import { sendDailyReports, startTelegramPolling } from "./jobs/telegram";
+import { nudgeDailyJobs } from "./jobs/lazy";
 
 const app = express();
 app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+app.use("/api", (_req, _res, next) => (nudgeDailyJobs(), next()));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, time: new Date() }));
 app.use("/api/auth", rateLimit({ windowMs: 15 * 60000, limit: 50 }), authRouter);
